@@ -11,16 +11,15 @@ import AnswerArea from './components/AnswerArea';
 import pokemonsList from '@/pokemon.json';
 import { client } from './lib/supabaseClient';
 import { Button } from './components/ui/button';
-import { Loader2 } from 'lucide-react';
 import ThemeDisplay from './components/ThemeDisplay';
 import pokemonLang from '@/pokemonLang.json'
 import { ateThemeIndexContext } from './contexts/ateThemeIndexContext';
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from './components/ui/dialog';
 import TitleScreen from './components/TitleScreen';
 import { v4 as uuid} from 'uuid'
-import VS from './assets/vs.png'
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { channelsContext } from './contexts/channelContexts';
+import MatchingScreen from './components/MatchingScreen';
 
 function App() {
   const [myId, setMyId] = useState<string>('');
@@ -35,7 +34,11 @@ function App() {
   const [isSubscribing,setIsSubscribing] = useState(false);
   const [visitorsCount, setVisitorsCount] = useState(0);
   const [channels, setChannels] = useState<{[key:string]:RealtimeChannel}>({})
+  const avatarList = [25,133,96,282,908];
+  const [avatar, setAvatar] = useState<{me: number,enemy:number}>({me: avatarList[0],enemy:avatarList[0]})
 
+  const myAvatarRef = useRef(avatar.me)
+  myAvatarRef.current = avatar.me
   const themeRef = useRef(theme);
   const themeImageRef = useRef('');
 
@@ -78,6 +81,7 @@ function App() {
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log(newPresences[0].name + 'が入室しました。', key, newPresences)
         setUsers(users => [...users,{ name:newPresences[0].name, id:newPresences[0].id}])
+        player.send({type:'broadcast',event:'select_avatar',avatar: myAvatarRef.current})
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         console.log(leftPresences[0].name + 'が退室しました。', key, leftPresences)
@@ -99,14 +103,19 @@ function App() {
       .on('broadcast', { event: 'ready' }, (payload) => {
         setReadyUsers(payload.newReadyUsers)
       })
+      .on('broadcast',{ event: 'select_avatar'},(payload) => {
+        console.log('receveAvatar',payload.avatar)
+        setAvatar(avatar =>{return {...avatar, enemy: payload.avatar}})
+      })
       .subscribe(async (status) => {
         if (status !== 'SUBSCRIBED') return;
         const id = uuid();
-    
-        await player.track({ name, id })
-    
         setMyId(id);
         setIsSubscribing(false);
+    
+        await player.track({ name, id })
+        
+    
     })
   }
 
@@ -244,41 +253,18 @@ function App() {
                     {!myId && (
                       <TitleScreen subscribeInit={subscribeInit} isSubscribing={isSubscribing} visitorsCount={visitorsCount} />
                     )}
-                    {myId && users.length < 2 && (
-                      <div>
-                        <div className='grid md:grid-cols-3 place-items-center mt-[22vh] mx-auto'>
-                          <div className='place-self-center text-9xl font-rocknroll'>{users.find(user => user.id === myId)?.name}</div>
-                          <img className='max-h-[50vh] max-w-auto' src={VS} alt="" />
-                          <div><Loader2 className="h-[8rem] w-[8rem] animate-spin opacity-50" /></div>
-                        </div>
-                        <p className='mt-10'>対戦相手を探しています</p>
-                      </div>
-                    )}
-                    {myId && users.length >=2 && theme === '' &&  userIndex() < 2 && (
-                      <div>
-                        <div className='grid md:grid-cols-3 place-items-center mt-[22vh] mx-auto'>
-                          <div className='place-self-center text-9xl font-rocknroll'>{users.find(user => user.id === myId)?.name}</div>
-                          <img className='max-h-[50vh] max-w-auto' src={VS} alt="" />
-                          <div className='place-self-center text-9xl font-rocknroll'>{users.find(user => user.id !== myId)?.name}</div>
-                        </div>
-                        <p className='mt-10'>対戦相手が見つかりました！</p>
-                        {readyUsers.includes(myId)?
-                        <Button className='mt-10' disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" />対戦相手の準備を待っています</Button>
-                        :
-                        <Button className='mt-10' onClick={handleReady} >準備完了！</Button>
-                        }
-                      </div>
-                    )}
-                    {myId && users.length >=2 &&  userIndex() >= 2 && (
-                      <div>
-                      {/* <PokemonCarousel /> */}
-                      <div className='grid md:grid-cols-3 place-items-center mt-[22vh] mx-auto'>
-                        <div className='place-self-center text-9xl font-quicksand'>{users.find(user => user.id === myId)?.name}</div>
-                        <img className='max-h-[50vh] max-w-auto' src={VS} alt="" />
-                        <div><Loader2 className="h-10 w-10 animate-spin opacity-50" /></div>
-                      </div>
-                      <p className='mt-10'>対戦中の人がいます。しばらくお待ちください。</p>
-                    </div>
+                    {myId && (
+                      <MatchingScreen
+                        users={users}
+                        theme={theme}
+                        userIndex={userIndex}
+                        readyUsers = {readyUsers}
+                        myId = {myId}
+                        handleReady = {handleReady}
+                        avatarList = {avatarList}
+                        avatar = {avatar}
+                        setAvatar = {setAvatar}
+                      />
                     )}
                     {myId && users.length >= 2 && userIndex() < 2 && (
                     <>
@@ -287,9 +273,19 @@ function App() {
                           <>
                           <ateThemeIndexContext.Provider value={[ateThemeIndex, setAteThemeIndex]} >
                             <div key={theme}>
-                            <KanaTable />
-                            <TextInput />
-                            <ThemeDisplay />
+                              <div className='flex justify-between items-center'>
+                                <div className='overflow-hidden border-red-400 border-8 rounded-full bg-slate-50 m-3'>
+                                  <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.me}.png`} alt="" />
+                                </div>
+                                <div>
+                                  <KanaTable />
+                                  <TextInput />
+                                  <ThemeDisplay />
+                                </div>
+                                <div className='overflow-hidden border-blue-400 border-8 rounded-full bg-slate-50 m-3'>
+                                  <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.enemy}.png`} alt="" />
+                                </div>
+                              </div>
                             {answeredWords.includes(theme) ? (
                               <>
                                 <Dialog defaultOpen onOpenChange={()=>{setIsMyTurn(false)}}>
