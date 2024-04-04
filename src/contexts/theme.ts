@@ -1,0 +1,8 @@
+
+import { Dispatch, createContext } from "react";
+
+
+const defaultValue:[string, Dispatch<React.SetStateAction<string>>] = ['',() => {}]
+
+
+export const themeContext = createContext(defaultValue)

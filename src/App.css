@@ -1,0 +1,24 @@
+
+.bg {
+  background-color: rgba(254,236,210,.95);
+}
+
+.bg::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:linear-gradient(70deg, red, rgba(255,0,0,0.3) 45%,rgba(0,0,255,0.3) 55%,blue);
+  transition: opacity 1s;
+  opacity: 0;
+  content: '';
+}
+
+.bg.-vs::before {
+  opacity: 1;
+}
+
+.silhouettes {
+  filter: invert(86%) sepia(25%) saturate(354%) hue-rotate(331deg) brightness(106%) contrast(86%);
+}
