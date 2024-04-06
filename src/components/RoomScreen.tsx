@@ -19,9 +19,10 @@ interface RoomScreenProps {
   avatar: {me: number,enemy:number}
   handleThemeReset: ()=>void
   myId: string
+  roomId: string
 }
 
-const RoomScreen = ({avatar,handleThemeReset,myId}:RoomScreenProps) => {
+const RoomScreen = ({avatar,handleThemeReset,myId,roomId}:RoomScreenProps) => {
 
   const [ateThemeIndex, setAteThemeIndex] = useState<number[]>([])
   const [answeredWords, setAnsweredWords] = useState<string[]>([])
@@ -35,7 +36,7 @@ const RoomScreen = ({avatar,handleThemeReset,myId}:RoomScreenProps) => {
 
   useEffect(() => {
     const random = Math.random();
-    const room = client.channel('room',{config:{broadcast:{ack:true}}})
+    const room = client.channel('room-'+roomId,{config:{broadcast:{ack:true}}})
             .on('broadcast', { event: 'input' }, (payload) => {
               setAnsweredWords(answeredWords => [...answeredWords, payload.answeredWord])
               setUsedKana(payload.newUsedKanaList)
@@ -62,7 +63,7 @@ const RoomScreen = ({avatar,handleThemeReset,myId}:RoomScreenProps) => {
       client.removeChannel(room)
 
     }
-  },[setChannels, setTheme])
+  },[roomId, setChannels, setTheme])
 
   const checkState = (str:string,theme:string,index:number) => {
     if(!theme.includes(str)) return undefined;
