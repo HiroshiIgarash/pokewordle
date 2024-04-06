@@ -100,6 +100,10 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
       const room = client.channel('room-'+roomId,{config:{broadcast:{ack:true}}})
       .on('presence',{event:'join'},()=>{
         room.send({type:'broadcast',event:'select_avatar',avatar: avatar.me})
+        if(Object.keys(room.presence.state).length === 2) {
+          client.removeChannel(channels.player)
+          .then(()=>console.log('remove'))
+        }
       })
       .on('presence',{event:'leave'},({leftPresences})=>{
         setReadyUsers(users => users.filter(user => user !== leftPresences[0].id));
