@@ -28,6 +28,7 @@ interface MatchingScreenProps {
     enemy: number;
   }>>
   handleThemeReset: () => void
+  setRoomId:React.Dispatch<React.SetStateAction<string>>
 }
 
 const ReadyButton = ({readyUsers,myId,handleReady}:{
@@ -46,7 +47,7 @@ const ReadyButton = ({readyUsers,myId,handleReady}:{
   )
 }
 
-const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarList,handleThemeReset}:MatchingScreenProps) => {
+const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarList,handleThemeReset,setRoomId}:MatchingScreenProps) => {
   const [api, setApi] = useState<CarouselApi>()
   const [channels,setChannels] = useContext(channelsContext)
   const [readyUsers, setReadyUsers] = useState<string[]>([])
@@ -92,7 +93,11 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
 
   useEffect(() => {
     if(status === 'MATCHING') {
-      const room = client.channel('room',{config:{broadcast:{ack:true}}})
+      const user1 = users[0].id;
+      const user2 = users[1].id;
+      const roomId = user1 < user2 ? user1+user2 : user2+user1;
+      setRoomId(roomId)
+      const room = client.channel('room-'+roomId,{config:{broadcast:{ack:true}}})
       .on('presence',{event:'join'},()=>{
         room.send({type:'broadcast',event:'select_avatar',avatar: avatar.me})
       })
@@ -124,7 +129,7 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
         client.removeChannel(room)
       }
     }
-  },[avatar.me, setAvatar, setChannels, setTheme, status])
+  },[avatar.me, setAvatar, setChannels, setRoomId, setTheme, status, users])
 
   if(status === 'NULL') return null
 

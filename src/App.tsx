@@ -13,6 +13,7 @@ import RoomScreen from './components/RoomScreen';
 
 function App() {
   const [myId, setMyId] = useState<string>('');
+  const [, setRoomId] = useState<string>('');
 
 
   const [theme, setTheme] = useState<string>('')
@@ -171,6 +172,7 @@ function App() {
                         avatar = {avatar}
                         setAvatar = {setAvatar}
                         handleThemeReset = {handleThemeReset}
+                        setRoomId={setRoomId}
                       />
                     )}
                     <>
