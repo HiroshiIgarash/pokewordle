@@ -14,7 +14,7 @@ const Cell = ({text, state}: CellProps) => {
   let stateClass = '';
   switch (state) {
     case 'used':
-      stateClass = 'bg-slate-300' 
+      stateClass = 'bg-slate-500' 
       break;
     case 'eat':
       stateClass = 'bg-green-200' 

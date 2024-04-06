@@ -33,7 +33,7 @@ const TextInput = () => {
 
     setAnsweredWords([...answeredWords, inputValue])
 
-    channels.player.send(
+    channels.room.send(
       {
         type: 'broadcast',
         event: 'input',

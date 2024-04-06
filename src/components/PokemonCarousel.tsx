@@ -24,7 +24,7 @@ const PokemonCarousel = () => {
       
       fetchPokemonImage(pokemon)
       .then(src => setPokemonImg(src))
-      .then(()=setPokemon(pokemon))
+      .then(()=>setPokemon(pokemon))
 
     }, 8000)
     

@@ -5,23 +5,29 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { useContext, useEffect, useState } from "react";
 import { channelsContext } from "@/contexts/channelContexts";
-
+import { client } from "@/lib/supabaseClient";
+import { themeContext } from "@/contexts/theme";
 interface MatchingScreenProps {
   users:{
     name: string;
     id: string;
+    status: 'WAITING'|'MATCHING'|'PLAYING';
   }[]
+  setUsers: React.Dispatch<React.SetStateAction<{
+    name: string;
+    id: string;
+    status: 'WAITING' | 'MATCHING' | 'PLAYING';
+  }[]>>
   theme: string
   userIndex:(id?: string) => number
-  readyUsers: string[]
   myId: string
-  handleReady: () => void
   avatarList: number[]
   avatar: {me: number,enemy:number}
   setAvatar:React.Dispatch<React.SetStateAction<{
     me: number;
     enemy: number;
-}>>
+  }>>
+  handleThemeReset: () => void
 }
 
 const ReadyButton = ({readyUsers,myId,handleReady}:{
@@ -40,9 +46,27 @@ const ReadyButton = ({readyUsers,myId,handleReady}:{
   )
 }
 
-const MatchingScreen = ({users, theme, userIndex,readyUsers,myId,handleReady, avatar,setAvatar,avatarList}:MatchingScreenProps) => {
+const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarList,handleThemeReset}:MatchingScreenProps) => {
   const [api, setApi] = useState<CarouselApi>()
-  const [channels] = useContext(channelsContext)
+  const [channels,setChannels] = useContext(channelsContext)
+  const [readyUsers, setReadyUsers] = useState<string[]>([])
+  const [,setTheme] = useContext(themeContext)
+
+  const handleReady = () => {
+    const newReadyUsers = [...readyUsers,myId];
+    setReadyUsers(newReadyUsers)
+    channels.room.send({ type: 'broadcast', event: 'ready',newReadyUsers})
+    if(newReadyUsers.length === 2) {
+      handleThemeReset();
+    }
+  }
+
+  useEffect(() => {
+    if(theme !== '' && readyUsers.length < 2) {
+      alert('対戦相手との接続が切れました');
+      setReadyUsers([])
+    }
+  },[readyUsers.length, theme])
   
   useEffect(() => {
     
@@ -52,17 +76,55 @@ const MatchingScreen = ({users, theme, userIndex,readyUsers,myId,handleReady, av
 
     const onSelect = () => {
       setAvatar(avatar => {return{...avatar,me:avatarList[api.selectedScrollSnap()]}})
-      channels.player.send({type:'broadcast',event:'select_avatar',avatar: avatarList[api.selectedScrollSnap()]})
+      channels.room?.send({type:'broadcast',event:'select_avatar',avatar: avatarList[api.selectedScrollSnap()]})
     }
 
     api.on("select", onSelect)
 
     return ()=> {api.off("select",onSelect)}
-  }, [api, avatarList, channels.player, setAvatar])
+  }, [api, avatarList, channels.player, channels.room, setAvatar])
 
-  const status = users.length < 2 ? 'WAITING' : 
+  
+  const status = readyUsers.length === 2 && theme !== '' ? 'NULL' :
+                  users.length < 2 ? 'WAITING' : 
                   users.length >=2 && theme === '' &&  userIndex() < 2 ? 'MATCHING' :
                   users.length >=2 &&  userIndex() >= 2 ? 'OTHERS_PLAYING' : 'NULL'
+
+  useEffect(() => {
+    if(status === 'MATCHING') {
+      const room = client.channel('room',{config:{broadcast:{ack:true}}})
+      .on('presence',{event:'join'},()=>{
+        room.send({type:'broadcast',event:'select_avatar',avatar: avatar.me})
+      })
+      .on('presence',{event:'leave'},({leftPresences})=>{
+        setReadyUsers(users => users.filter(user => user !== leftPresences[0].id));
+      })
+      .on('broadcast',{ event: 'select_avatar'},(payload) => {
+        setAvatar(avatar =>{return {...avatar, enemy: payload.avatar}})
+      })
+      .on('broadcast', { event: 'ready' }, (payload) => {
+        setReadyUsers(payload.newReadyUsers)
+      })
+      .on('broadcast', { event: 'themeReset' }, (payload) => {
+        setTheme(payload.theme)
+        // setAnsweredWords([])
+        // setUsedKana([])
+        // setIsMyTurn(true)
+        // setAteThemeIndex([])
+      })
+      .subscribe((state) => {
+        if(state !== "SUBSCRIBED") return
+        
+        setChannels(c=>{return{...c,room}})
+        room.track({})
+      })
+      
+      // client.removeChannel(channels.player)
+      return () => {
+        client.removeChannel(room)
+      }
+    }
+  },[avatar.me, setAvatar, setChannels, setTheme, status])
 
   if(status === 'NULL') return null
 
