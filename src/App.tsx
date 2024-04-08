@@ -1,6 +1,6 @@
 import './App.css'
 import { MyIdContext } from './contexts/myIdContext';
-import { themeContext } from './contexts/theme';
+import { themeContext } from './contexts/themeContext';
 import { useEffect, useRef, useState } from 'react';
 import pokemonsList from '@/pokemon.json';
 import { client } from './lib/supabaseClient';
@@ -10,6 +10,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { channelsContext } from './contexts/channelContexts';
 import MatchingScreen from './components/MatchingScreen';
 import RoomScreen from './components/RoomScreen';
+import { User } from './types/types';
 
 function App() {
   const [myId, setMyId] = useState<string>('');
@@ -18,7 +19,8 @@ function App() {
 
   const [theme, setTheme] = useState<string>('')
   const { pokemons } = pokemonsList
-  const [users, setUsers] = useState<{ name: string, id: string, status: 'WAITING'|'MATCHING'|'PLAYING' }[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [players, setPlayers] = useState<User[]>([]);
 
 
 
@@ -27,6 +29,7 @@ function App() {
   const [channels, setChannels] = useState<{[key:string]:RealtimeChannel}>({})
   const avatarList = [25,133,96,282,908];
   const [avatar, setAvatar] = useState<{me: number,enemy:number}>({me: avatarList[0],enemy:avatarList[0]})
+  const [rooms, setRooms] = useState(new Set<string>())
 
   const myAvatarRef = useRef(avatar.me)
   myAvatarRef.current = avatar.me
@@ -39,12 +42,23 @@ function App() {
       .on('presence',{event:'sync'},()=>{
         setVisitorsCount(Object.keys(lobby.presence.state).length)
       })
+      .on('broadcast',{event:'created_room'},(payload) => {
+        setRooms(rooms => {
+          return rooms.add(payload.roomId)
+        })
+      })
+      .on('broadcast',{event:'closed_room'},(payload) => {
+        setRooms(rooms => {
+          rooms.delete(payload.roomId)
+          return rooms
+        })
+      })
       .subscribe(async (status) => {
         if (status !== 'SUBSCRIBED') return;
 
-        await lobby.track({})
-
         setChannels((channels)=>{return {...channels,lobby}})
+
+        await lobby.track({})
 
       })
 
@@ -159,7 +173,7 @@ function App() {
                   <div className='max-w-[1366px] mx-auto relative'>
                     <div className='min-h-screen p-2 md:p-8 text-center font-rocknroll grid'>
                     {!myId && (
-                      <TitleScreen subscribeInit={subscribeInit} isSubscribing={isSubscribing} visitorsCount={visitorsCount} />
+                      <TitleScreen subscribeInit={subscribeInit} isSubscribing={isSubscribing} visitorsCount={visitorsCount} rooms={rooms} />
                     )}
                     {myId && (
                       <MatchingScreen
@@ -173,6 +187,7 @@ function App() {
                         setAvatar = {setAvatar}
                         handleThemeReset = {handleThemeReset}
                         setRoomId={setRoomId}
+                        setPlayers={setPlayers}
                       />
                     )}
                     <>
@@ -184,6 +199,7 @@ function App() {
                           handleThemeReset = {handleThemeReset}
                           myId = {myId}
                           roomId = {roomId}
+                          players = {players}
                         />
                       }
                     </>

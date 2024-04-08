@@ -13,16 +13,19 @@ import { isMyTurnContext } from "@/contexts/isMyTurnContext";
 import { usedKanaListContext } from "@/contexts/usedKanaContext";
 import { channelsContext } from "@/contexts/channelContexts";
 import { Loader2 } from "lucide-react";
-import { themeContext } from "@/contexts/theme";
+import { themeContext } from "@/contexts/themeContext";
+import { cn } from "@/lib/utils";
+import { User } from "@/types/types";
 
 interface RoomScreenProps {
   avatar: {me: number,enemy:number}
   handleThemeReset: ()=>void
   myId: string
   roomId: string
+  players:User[]
 }
 
-const RoomScreen = ({avatar,handleThemeReset,myId,roomId}:RoomScreenProps) => {
+const RoomScreen = ({avatar,handleThemeReset,myId,roomId,players}:RoomScreenProps) => {
 
   const [ateThemeIndex, setAteThemeIndex] = useState<number[]>([])
   const [answeredWords, setAnsweredWords] = useState<string[]>([])
@@ -34,9 +37,18 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId}:RoomScreenProps) => {
   const [channels,setChannels] = useContext(channelsContext)
   const [readyUsers ,setReadyUsers] = useState<string[]>([])
 
+  const myPlayer = players.find(p => p.id === myId)
+  const opponentPlayer = players.find(p => p.id !== myId)
+
   useEffect(() => {
     const random = Math.random();
     const room = client.channel('room-'+roomId,{config:{broadcast:{ack:true}}})
+            .on('presence',{event:'join'},() => {
+              channels.lobby.send({type:'broadcast',event:'created_room',roomId})
+            })
+            .on('presence',{event:'leave'},() => {
+              channels.lobby.send({type:'broadcast',event:'closed_room',roomId})
+            })
             .on('broadcast', { event: 'input' }, (payload) => {
               setAnsweredWords(answeredWords => [...answeredWords, payload.answeredWord])
               setUsedKana(payload.newUsedKanaList)
@@ -51,6 +63,8 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId}:RoomScreenProps) => {
             .subscribe(async(state) => {
               if(state !== "SUBSCRIBED") return
 
+              room.track({})
+
               await room.send({ type: 'broadcast',event: 'set_first_turn',isOpponentTurn: random > 0.5})
               setIsMyTurn(random > 0.5)
               setChannels(c=>{return{...c,room}})
@@ -61,7 +75,6 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId}:RoomScreenProps) => {
 
     return () => {
       client.removeChannel(room)
-
     }
   },[roomId, setChannels, setTheme])
 
@@ -118,21 +131,27 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId}:RoomScreenProps) => {
       <AnsweredPokemonContext.Provider value={[answeredWords, setAnsweredWords]}>
         <isMyTurnContext.Provider value={[isMyTurn, setIsMyTurn]}>
           <ateThemeIndexContext.Provider value={[ateThemeIndex, setAteThemeIndex]} >
-            <div>
+            <div className="place-self-center">
               <div className='flex justify-between items-center'>
-                <div className='overflow-hidden border-red-400 border-8 rounded-full bg-slate-50 m-3'>
-                  <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.me}.png`} alt="" />
+                <div>
+                  <div className={cn("drop-shadow-lg overflow-hidden border-red-400 border-8 rounded-full bg-slate-50 m-3",!isMyTurn && "brightness-50")}>
+                    <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.me}.png`} alt="" />
+                  </div>
+                  <p>{myPlayer?.name}</p>
                 </div>
                 <div>
                   <KanaTable />
                   <TextInput />
                   <ThemeDisplay />
                 </div>
-                <div className='overflow-hidden border-blue-400 border-8 rounded-full bg-slate-50 m-3'>
-                  <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.enemy}.png`} alt="" />
+                <div>
+                  <div className={cn("drop-shadow-lg overflow-hidden border-blue-400 border-8 rounded-full bg-slate-50 m-3",isMyTurn && "brightness-50")}>
+                    <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.enemy}.png`} alt="" />
+                  </div>
+                  <p>{opponentPlayer?.name}</p>
                 </div>
               </div>
-            {answeredWords.includes(theme) ? (
+            {(answeredWords.includes(theme) || answeredWords.length === 18) ? (
               <>
                 <Dialog defaultOpen onOpenChange={()=>{setIsMyTurn(false)}}>
                   <DialogContent className='md:px-[4rem] md:max-w-lg max-w-[90vw] block'>
@@ -150,10 +169,11 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId}:RoomScreenProps) => {
                         <p className='text-center text-3xl font-bold'>{theme}</p>
                         <p className='text-xl mt-4 flex justify-center text-left'>
                           {
+                            !answeredWords.includes(theme) ? 'ざんねん！どちらも当てらなかった...' :
                             isMyTurn ?
                             'ざんねん！相手に当てられてしまいました' :
                             'おめでとう！あなたのかちです！'
-                            }
+                          }
                         </p>
                         </>
 

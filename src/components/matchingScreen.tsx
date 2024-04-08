@@ -6,18 +6,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/t
 import { useContext, useEffect, useState } from "react";
 import { channelsContext } from "@/contexts/channelContexts";
 import { client } from "@/lib/supabaseClient";
-import { themeContext } from "@/contexts/theme";
+import { themeContext } from "@/contexts/themeContext";
+import { User } from "@/types/types";
 interface MatchingScreenProps {
-  users:{
-    name: string;
-    id: string;
-    status: 'WAITING'|'MATCHING'|'PLAYING';
-  }[]
-  setUsers: React.Dispatch<React.SetStateAction<{
-    name: string;
-    id: string;
-    status: 'WAITING' | 'MATCHING' | 'PLAYING';
-  }[]>>
+  users: User[]
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>
   theme: string
   userIndex:(id?: string) => number
   myId: string
@@ -29,6 +22,7 @@ interface MatchingScreenProps {
   }>>
   handleThemeReset: () => void
   setRoomId:React.Dispatch<React.SetStateAction<string>>
+  setPlayers:React.Dispatch<React.SetStateAction<User[]>>
 }
 
 const ReadyButton = ({readyUsers,myId,handleReady}:{
@@ -47,7 +41,7 @@ const ReadyButton = ({readyUsers,myId,handleReady}:{
   )
 }
 
-const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarList,handleThemeReset,setRoomId}:MatchingScreenProps) => {
+const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarList,handleThemeReset,setRoomId,setPlayers}:MatchingScreenProps) => {
   const [api, setApi] = useState<CarouselApi>()
   const [channels,setChannels] = useContext(channelsContext)
   const [readyUsers, setReadyUsers] = useState<string[]>([])
@@ -93,9 +87,10 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
 
   useEffect(() => {
     if(status === 'MATCHING') {
-      const user1 = users[0].id;
-      const user2 = users[1].id;
-      const roomId = user1 < user2 ? user1+user2 : user2+user1;
+      const user1 = users[0];
+      const user2 = users[1];
+      const roomId = user1.id < user2.id ? user1.id+user2.id : user2.id+user1.id;
+      setPlayers([user1,user2])
       setRoomId(roomId)
       const room = client.channel('room-'+roomId,{config:{broadcast:{ack:true}}})
       .on('presence',{event:'join'},()=>{
@@ -116,10 +111,6 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
       })
       .on('broadcast', { event: 'themeReset' }, (payload) => {
         setTheme(payload.theme)
-        // setAnsweredWords([])
-        // setUsedKana([])
-        // setIsMyTurn(true)
-        // setAteThemeIndex([])
       })
       .subscribe((state) => {
         if(state !== "SUBSCRIBED") return
@@ -128,12 +119,11 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
         room.track({})
       })
       
-      // client.removeChannel(channels.player)
       return () => {
         client.removeChannel(room)
       }
     }
-  },[avatar.me, setAvatar, setChannels, setRoomId, setTheme, status, users])
+  },[avatar.me, channels.player, setAvatar, setChannels, setRoomId, setTheme, status, users])
 
   if(status === 'NULL') return null
 
@@ -141,7 +131,7 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
   return (
     <div>
       <div className='grid md:grid-cols-3 place-items-center mt-[22vh] mx-auto'>
-        <div className='place-self-center text-9xl font-rocknroll'>
+        <div className='place-self-center text-7xl font-rocknroll'>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -168,7 +158,7 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
         <img className='max-h-[50vh] max-w-auto' src={VS} alt="" />
         {
           status === 'MATCHING' ? 
-          <div className='place-self-center text-9xl font-rocknroll'>
+          <div className='place-self-center text-7xl font-rocknroll'>
             <div className="w-[350px] mx-auto">
             <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.enemy}.png`} alt="" />
             </div>
