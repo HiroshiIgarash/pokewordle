@@ -57,12 +57,12 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
     }
   }
 
-  useEffect(() => {
-    if(theme !== '' && readyUsers.length < 2) {
-      alert('対戦相手との接続が切れました');
-      setReadyUsers([])
-    }
-  },[readyUsers.length, theme])
+  // useEffect(() => {
+  //   if(theme !== '' && readyUsers.length < 2) {
+  //     alert('対戦相手との接続が切れました');
+  //     setReadyUsers([])
+  //   }
+  // },[readyUsers.length, theme])
   
   useEffect(() => {
     
@@ -133,13 +133,13 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
 
   return (
     <div>
-      <div className='grid md:grid-cols-3 place-items-center mt-[22vh] mx-auto'>
-        <div className='place-self-center text-7xl font-rocknroll'>
+      <div className='grid md:grid-cols-3 place-items-center md:mt-[22vh] mx-auto'>
+        <div className='place-self-center text-2xl md:text-7xl font-rocknroll'>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
 
-              <Carousel opts={{loop:true}} className="w-[350px] mx-auto" setApi={setApi}>
+              <Carousel opts={{loop:true}} className="w-[40vw] md:w-[350px] mx-auto" setApi={setApi}>
                 <CarouselContent>
                   {avatarList.map(avatar => (
                     <CarouselItem key={avatar}><img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar}.png`} alt="" /></CarouselItem>
@@ -158,19 +158,19 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
         </TooltipProvider>
           {users.find(user => user.id === myId)?.name}
           </div>
-        <img className='max-h-[50vh] max-w-auto' src={VS} alt="" />
+        <img className='max-h-[10vh] md:max-h-[50vh] max-w-auto my-5 md:my-0' src={VS} alt="" />
         {
           status === 'MATCHING' ? 
-          <div className='place-self-center text-7xl font-rocknroll'>
-            <div className="w-[350px] mx-auto">
+          <div className='place-self-center text-2xl md:text-7xl font-rocknroll'>
+            <div className="w-[40vw] md:w-[350px] mx-auto">
             <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.enemy}.png`} alt="" />
             </div>
             {users.find(user => user.id !== myId)?.name}
           </div>:
-          <div><Loader2 className="h-[8rem] w-[8rem] animate-spin opacity-50" /></div>
+          <div><Loader2 className="md:h-[8rem] md:w-[8rem] h-[6rem] w-[6rem] animate-spin opacity-50" /></div>
         }
       </div>
-      <p className='mt-10 text-4xl'>{
+      <p className='mt-10 text-xl md:text-4xl'>{
         status === 'WAITING' ? '対戦相手を探しています' :
         status === 'MATCHING'  ? '対戦相手が見つかりました！' : 
         status === 'OTHERS_PLAYING' && '対戦中の人がいます。しばらくお待ちください。'

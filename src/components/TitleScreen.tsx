@@ -31,7 +31,7 @@ const TitleScreen = ({subscribeInit,isSubscribing,visitorsCount}:TitleScreenProp
   }
 
   return (
-      <div className='relative grid place-items-center h-full overflow-hidden grid-flow-col'>
+      <div className='relative grid place-items-center h-full overflow-hidden md:grid-flow-col'>
 
         <a className="absolute right-2 top-2 block transition-opacity hover:opacity-70 cursor-pointer" href='https://github.com/HiroshiIgarash/pokewordle' target='_blank'>
           <IoLogoGithub className=' bg-white rounded-full' size="3em" />

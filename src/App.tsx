@@ -161,7 +161,7 @@ function App() {
                 <div className={`bg relative ${myId ? '-vs' : ''}`}>
                 {
                   silhouettes.map((s,index) => (
-                    <div className='absolute w-[50vh] silhouettes aspect-square mix-blend-multiply' style={{...s.style}} key={`${s.num}-${index}`}>
+                    <div className='hidden md:block absolute w-[50vh] silhouettes aspect-square mix-blend-multiply' style={{...s.style}} key={`${s.num}-${index}`}>
                       <img className='brightness-0 transition-opacity duration-1000 opacity-0 w-full'
                       style={{transitionDelay:`${200 + index*300}ms`}}
                       onLoad={(img) => {
@@ -174,7 +174,7 @@ function App() {
                   ))
                 }
                   <div className='max-w-[1366px] mx-auto relative'>
-                    <div className='min-h-screen p-2 md:p-8 text-center font-rocknroll grid'>
+                    <div className='min-h-dvh p-2 md:p-8 text-center font-rocknroll grid'>
                     {!myId && (
                       <TitleScreen subscribeInit={subscribeInit} isSubscribing={isSubscribing} visitorsCount={visitorsCount} rooms={rooms} />
                     )}
