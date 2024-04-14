@@ -2,6 +2,9 @@
 import Cell from "./Cell"
 import { useContext } from "react";
 import { usedKanaListContext } from "@/contexts/usedKanaContext";
+import { themeContext } from "@/contexts/themeContext";
+import { ateThemeIndexContext } from "@/contexts/ateThemeIndexContext";
+import { CellStateType } from "@/types/types";
 
 const kanaList1 = [
   'ア','イ','ウ','エ','オ',
@@ -28,29 +31,43 @@ const kanaList3 = [
   'ー'
 ]
 
-const KanaTable = () => {
+const GenerateCells = ({list}:{list:(string | undefined)[]}) => {
   const [usedKanaList] = useContext(usedKanaListContext)
+  const [theme] = useContext(themeContext)
+  const [ateThemeIndex] = useContext(ateThemeIndexContext)
 
-  const generateCells = (list:(string | undefined)[]) => {
-    return list.map((text,index) => {
-      const state = text?
-                      usedKanaList.includes(text)?'used':undefined : 
-                      undefined
-      return <Cell text={text} key={index} state={state} />
-    })
+  const isAte = (kana:string) => {
+    const ateKanas = ateThemeIndex.map(i => theme[i])
+    return ateKanas.includes(kana)
   }
+
+  const isBite = (kana:string) => {
+    return usedKanaList.includes(kana) && theme.includes(kana)
+  }
+
+  return list.map((text,index) => {
+    const state:CellStateType = text === undefined ? undefined :
+                  isAte(text) ? 'eat' :
+                  isBite(text) ? 'bite' :
+                  usedKanaList.includes(text) ? 'used' : undefined
+
+    return <Cell text={text} key={index} state={state} />
+  })
+}
+
+const KanaTable = () => {
   
   return (
     <>
       <div className="grid grid-flow-dense gap-y-4 gap-x-1 grid-cols-2 md:flex md:gap-8 w-fit md:w-min mx-auto md:flex-row-reverse">
         <div className="grid col-span-2 grid-rows-5 grid-flow-col w-min gap-1" style={{direction: 'rtl'}}>
-          {generateCells(kanaList1)}
+          <GenerateCells list={kanaList1} />
         </div>
         <div className="col-start-2 md:col-start-1 grid grid-rows-5 grid-flow-col w-min gap-1" style={{direction: 'rtl'}}>
-          {generateCells(kanaList2)}
+          <GenerateCells list={kanaList2} />
         </div>
         <div className="grid grid-rows-5 grid-flow-col justify-self-end w-min gap-1" style={{direction: 'rtl'}}>
-          {generateCells(kanaList3)}
+          <GenerateCells list={kanaList3} />
         </div>
       </div>
     </>

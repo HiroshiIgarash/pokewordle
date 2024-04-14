@@ -1,5 +1,5 @@
 import { ateThemeIndexContext } from '@/contexts/ateThemeIndexContext'
-import { themeContext } from '@/contexts/theme'
+import { themeContext } from '@/contexts/themeContext'
 import { useContext } from 'react'
 import Cell from './Cell'
 

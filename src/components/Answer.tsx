@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import Cell from './Cell';
-import { themeContext } from '@/contexts/theme';
+import { themeContext } from '@/contexts/themeContext';
 import PokemonIcon from './PokemonIcon';
 
 type AnswerProps = {
