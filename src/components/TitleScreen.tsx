@@ -5,6 +5,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card'
+import { IoLogoGithub } from 'react-icons/io5'
 
 interface TitleScreenProps {
   subscribeInit: (name:string)=>void,
@@ -30,7 +31,12 @@ const TitleScreen = ({subscribeInit,isSubscribing,visitorsCount}:TitleScreenProp
   }
 
   return (
-      <div className='grid place-items-center h-full overflow-hidden grid-flow-col'>
+      <div className='relative grid place-items-center h-full overflow-hidden grid-flow-col'>
+
+        <a className="absolute right-2 top-2 block transition-opacity hover:opacity-70 cursor-pointer" href='https://github.com/HiroshiIgarash/pokewordle' target='_blank'>
+          <IoLogoGithub className=' bg-white rounded-full' size="3em" />
+        </a>
+
 
         <div>
           {/* <h1 className='md:text-9xl font-quicksand font-bold animate-slide-in-bck-bottom text-6xl'>POKEMON<br></br>Wordle</h1> */}
@@ -64,10 +70,10 @@ const TitleScreen = ({subscribeInit,isSubscribing,visitorsCount}:TitleScreenProp
           </Card>
           {/* <Card className="w-[350px] shadow-lg">
             <CardHeader>
-              <CardTitle>Rooms</CardTitle>
+            <CardTitle>Rooms</CardTitle>
             </CardHeader>
             <CardContent>
-              現在、<span className='text-red-600'>{rooms.size}</span>組が遊んでいます
+            現在、<span className='text-red-600'>{rooms.size}</span>組が遊んでいます
             </CardContent>
           </Card> */}
         </div>
