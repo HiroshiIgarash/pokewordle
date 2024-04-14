@@ -53,7 +53,7 @@ const TitleScreen = ({subscribeInit,isSubscribing,visitorsCount,rooms}:TitleScre
           </div>
         </div>
 
-        <div className='z-10 grid grid-flow-row gap-10'>
+        {/* <div className='z-10 grid grid-flow-row gap-10'>
           <Card className="w-[350px] shadow-lg">
             <CardHeader>
               <CardTitle>Watching</CardTitle>
@@ -70,7 +70,7 @@ const TitleScreen = ({subscribeInit,isSubscribing,visitorsCount,rooms}:TitleScre
               現在、<span className='text-red-600'>{rooms.size}</span>組が遊んでいます
             </CardContent>
           </Card>
-        </div>
+        </div> */}
 
       </div>
 
