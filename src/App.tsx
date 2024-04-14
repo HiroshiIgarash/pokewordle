@@ -29,7 +29,10 @@ function App() {
   const [channels, setChannels] = useState<{[key:string]:RealtimeChannel}>({})
   const avatarList = [25,133,96,282,908];
   const [avatar, setAvatar] = useState<{me: number,enemy:number}>({me: avatarList[0],enemy:avatarList[0]})
-  const [rooms, setRooms] = useState(new Set<string>())
+  const [
+    rooms,
+    //  setRooms
+    ] = useState(new Set<string>())
 
   const myAvatarRef = useRef(avatar.me)
   myAvatarRef.current = avatar.me
@@ -42,17 +45,17 @@ function App() {
       .on('presence',{event:'sync'},()=>{
         setVisitorsCount(Object.keys(lobby.presence.state).length)
       })
-      .on('broadcast',{event:'created_room'},(payload) => {
-        setRooms(rooms => {
-          return rooms.add(payload.roomId)
-        })
-      })
-      .on('broadcast',{event:'closed_room'},(payload) => {
-        setRooms(rooms => {
-          rooms.delete(payload.roomId)
-          return rooms
-        })
-      })
+      // .on('broadcast',{event:'created_room'},(payload) => {
+      //   setRooms(rooms => {
+      //     return rooms.add(payload.roomId)
+      //   })
+      // })
+      // .on('broadcast',{event:'closed_room'},(payload) => {
+      //   setRooms(rooms => {
+      //     rooms.delete(payload.roomId)
+      //     return rooms
+      //   })
+      // })
       .subscribe(async (status) => {
         if (status !== 'SUBSCRIBED') return;
 

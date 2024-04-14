@@ -44,10 +44,11 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId,players}:RoomScreenProp
     const random = Math.random();
     const room = client.channel('room-'+roomId,{config:{broadcast:{ack:true}}})
             .on('presence',{event:'join'},() => {
-              channels.lobby.send({type:'broadcast',event:'created_room',roomId})
+              // channels.lobby.send({type:'broadcast',event:'created_room',roomId})
             })
             .on('presence',{event:'leave'},() => {
-              channels.lobby.send({type:'broadcast',event:'closed_room',roomId})
+              // channels.lobby.send({type:'broadcast',event:'closed_room',roomId})
+              alert('対戦相手との通信が切断されました')
             })
             .on('broadcast', { event: 'input' }, (payload) => {
               setAnsweredWords(answeredWords => [...answeredWords, payload.answeredWord])

@@ -46,6 +46,7 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
   const [channels,setChannels] = useContext(channelsContext)
   const [readyUsers, setReadyUsers] = useState<string[]>([])
   const [,setTheme] = useContext(themeContext)
+  const [usersInRoom, setUsersInRoom] = useState<User[]>([])
 
   const handleReady = () => {
     const newReadyUsers = [...readyUsers,myId];
@@ -82,13 +83,14 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
   
   const status = readyUsers.length === 2 && theme !== '' ? 'NULL' :
                   users.length < 2 ? 'WAITING' : 
-                  users.length >=2 && theme === '' &&  userIndex() < 2 ? 'MATCHING' :
+                  (users.length >=2 || usersInRoom.length >= 2) && theme === '' &&  userIndex() < 2 ? 'MATCHING' :
                   users.length >=2 &&  userIndex() >= 2 ? 'OTHERS_PLAYING' : 'NULL'
 
   useEffect(() => {
     if(status === 'MATCHING') {
       const user1 = users[0];
       const user2 = users[1];
+      setUsersInRoom([user1, user2])
       const roomId = user1.id < user2.id ? user1.id+user2.id : user2.id+user1.id;
       setPlayers([user1,user2])
       setRoomId(roomId)
@@ -102,6 +104,7 @@ const MatchingScreen = ({users, theme, userIndex,myId, avatar,setAvatar,avatarLi
       })
       .on('presence',{event:'leave'},({leftPresences})=>{
         setReadyUsers(users => users.filter(user => user !== leftPresences[0].id));
+        setUsersInRoom(users => users.filter(user => user !== leftPresences[0].id));
       })
       .on('broadcast',{ event: 'select_avatar'},(payload) => {
         setAvatar(avatar =>{return {...avatar, enemy: payload.avatar}})
