@@ -14,7 +14,7 @@ const Cell = ({text, state}: CellProps) => {
   return (
     <div 
       className={
-        cn("grid place-items-center w-8 h-8 rounded-sm border-2 border-current",
+        cn("grid place-items-center w-6 h-6 text-sm md:text-base md:w-8 md:h-8 rounded-sm border-2 border-current",
         state === 'used' ? 'bg-slate-500' :
         state === 'eat' ? 'bg-green-200' :
         state === 'bite' ? 'bg-amber-200' : 

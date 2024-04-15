@@ -59,7 +59,8 @@ const KanaTable = () => {
   
   return (
     <>
-      <div className="grid grid-flow-dense gap-y-4 gap-x-1 grid-cols-2 md:flex md:gap-8 w-fit md:w-min mx-auto md:flex-row-reverse">
+    <div className="overflow-x-auto">
+      <div className="flex md:flex gap-x-1 gap-y-4 md:gap-8 w-fit md:w-min mx-auto flex-row-reverse mt-10 md:mt-0">
         <div className="grid col-span-2 grid-rows-5 grid-flow-col w-min gap-1" style={{direction: 'rtl'}}>
           <GenerateCells list={kanaList1} />
         </div>
@@ -70,6 +71,7 @@ const KanaTable = () => {
           <GenerateCells list={kanaList3} />
         </div>
       </div>
+    </div>
     </>
     )
 }

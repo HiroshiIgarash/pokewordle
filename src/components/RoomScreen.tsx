@@ -48,7 +48,7 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId,players}:RoomScreenProp
             })
             .on('presence',{event:'leave'},() => {
               // channels.lobby.send({type:'broadcast',event:'closed_room',roomId})
-              alert('対戦相手との通信が切断されました')
+              // alert('対戦相手との通信が切断されました')
             })
             .on('broadcast', { event: 'input' }, (payload) => {
               setAnsweredWords(answeredWords => [...answeredWords, payload.answeredWord])
