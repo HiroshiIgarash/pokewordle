@@ -60,7 +60,7 @@ const TextInput = () => {
 
   return (
     <form className='flex w-fit mx-auto gap-4 mt-8' onSubmit={handleSubmit}>
-      <Input name='inputtext' ref={inputElement} disabled={!isMyTurn} />  
+      <Input className='text-lg md:text-base' name='inputtext' ref={inputElement} disabled={!isMyTurn} />  
       <Button disabled={!isMyTurn}>送信</Button>
     </form>
   )

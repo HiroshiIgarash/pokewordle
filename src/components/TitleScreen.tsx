@@ -31,7 +31,7 @@ const TitleScreen = ({subscribeInit,isSubscribing,visitorsCount}:TitleScreenProp
   }
 
   return (
-      <div className='relative grid place-items-center h-full overflow-hidden grid-flow-col'>
+      <div className='relative grid place-items-center h-full overflow-hidden md:grid-flow-col pt-[100px] md:pt-0 gap-y-16 md:gap-0'>
 
         <a className="absolute right-2 top-2 block transition-opacity hover:opacity-70 cursor-pointer" href='https://github.com/HiroshiIgarash/pokewordle' target='_blank'>
           <IoLogoGithub className=' bg-white rounded-full' size="3em" />
@@ -68,14 +68,20 @@ const TitleScreen = ({subscribeInit,isSubscribing,visitorsCount}:TitleScreenProp
               現在、<span className='text-red-600'>{visitorsCount}</span>人が見ています
             </CardContent>
           </Card>
-          {/* <Card className="w-[350px] shadow-lg">
+          <Card className="w-[350px] shadow-lg">
             <CardHeader>
-            <CardTitle>Rooms</CardTitle>
+            <CardTitle>Information</CardTitle>
             </CardHeader>
-            <CardContent>
-            現在、<span className='text-red-600'>{rooms.size}</span>組が遊んでいます
+            <CardContent className='text-left'>
+              このゲームは開発途中ですが、オンラインでゲームを楽しむことはできます。<br />
+              <hr className='my-2' />
+              実装予定の機能<br />
+              - ルーム機能<br />
+              - ソロプレイ機能<br />
+              - チャット機能<br />
+              - あそびかたの画像追加<br />
             </CardContent>
-          </Card> */}
+          </Card>
         </div>
 
       </div>

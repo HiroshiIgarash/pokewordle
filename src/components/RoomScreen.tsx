@@ -48,7 +48,7 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId,players}:RoomScreenProp
             })
             .on('presence',{event:'leave'},() => {
               // channels.lobby.send({type:'broadcast',event:'closed_room',roomId})
-              alert('対戦相手との通信が切断されました')
+              // alert('対戦相手との通信が切断されました')
             })
             .on('broadcast', { event: 'input' }, (payload) => {
               setAnsweredWords(answeredWords => [...answeredWords, payload.answeredWord])
@@ -133,19 +133,19 @@ const RoomScreen = ({avatar,handleThemeReset,myId,roomId,players}:RoomScreenProp
         <isMyTurnContext.Provider value={[isMyTurn, setIsMyTurn]}>
           <ateThemeIndexContext.Provider value={[ateThemeIndex, setAteThemeIndex]} >
             <div className="place-self-center">
-              <div className='flex justify-between items-center'>
+              <div className='md:flex justify-between items-center grid grid-cols-2'>
                 <div>
                   <div className={cn("drop-shadow-lg overflow-hidden border-red-400 border-8 rounded-full bg-slate-50 m-3",!isMyTurn && "brightness-50")}>
                     <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.me}.png`} alt="" />
                   </div>
                   <p>{myPlayer?.name}</p>
                 </div>
-                <div>
+                <div className="col-span-2 md:col-span-1">
                   <KanaTable />
                   <TextInput />
                   <ThemeDisplay />
                 </div>
-                <div>
+                <div className="col-start-2 row-start-1">
                   <div className={cn("drop-shadow-lg overflow-hidden border-blue-400 border-8 rounded-full bg-slate-50 m-3",isMyTurn && "brightness-50")}>
                     <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${avatar.enemy}.png`} alt="" />
                   </div>
